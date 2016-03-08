@@ -24,7 +24,20 @@ public class Programm {
         }
 
         try{
+            //db.dropIfExists("test");
             db.createTable("test");
+            db.createTableMitBlob("blob");
+
+
+            db.insertOrUpdate("Napret", 1234);
+            db.insertOrUpdate("Fleuren", 4561);
+            db.insertOrUpdate("Kevin", 6789);
+            db.insertOrUpdate("Jochen",12419864);
+
+            db.printTable("test");
+
+
+
 
         } catch (SQLException e){
             e.printStackTrace();
