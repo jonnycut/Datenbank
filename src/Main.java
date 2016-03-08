@@ -1,7 +1,7 @@
 import programm.Programm;
 
 /**
- * Created by KNapret on 04.03.2016.
+ * Created by KNapret on 04.03.2016.12
  */
 public class Main {
 
