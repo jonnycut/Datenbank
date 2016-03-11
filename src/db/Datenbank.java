@@ -1,7 +1,9 @@
 package db;
 
 import javax.swing.plaf.nimbus.State;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import java.sql.*;
 import java.util.ArrayList;
@@ -88,7 +90,7 @@ public class Datenbank {
     public void createTable(String tableName) throws SQLException {
 
         //try catch hier eigentlich nicht, da man sicherstellen sollte,
-        //dass die benötigte Tabelle exakt so existiert, wie sie benötigt wird
+        //dass die benÃ¶tigte Tabelle exakt so existiert, wie sie benÃ¶tigt wird
         //ggf. kann die SQLExeption genau untersucht werden...
 
         Statement stmt = conn.createStatement();
@@ -112,11 +114,11 @@ public class Datenbank {
     }
 
     /**
-     * Diese Methode löscht eine Tabelle, falls sie
+     * Diese Methode lÃ¶scht eine Tabelle, falls sie
      * existiert, andernfalls tut sie nichts.
      *
      * @param tablename Der Name der Tabelle, die
-     *                  gelöscht werden soll.
+     *                  gelÃ¶scht werden soll.
      * @throws SQLException Wenn beim Erstellen der
      *                      Verbindung ein Fehler auftritt.
      */
@@ -177,7 +179,7 @@ public class Datenbank {
                 max[i] = s.length();
             }
 
-            //Tabelleneinträge
+            //TabelleneintrÃ¤ge
 
             if (r.next()) {
                 do {
@@ -195,23 +197,23 @@ public class Datenbank {
                 for (int i = 0; i < tabelle.get(0).size(); i++) {
                     String s = "";
                     for (int j = 0; j < col; j++)
-                        s += "|"+String.format("%-"+max[j]+"s",
+                        s += "|" + String.format("%-" + max[j] + "s",
                                 tabelle.get(j).get(i));
-                    System.out.println(s+"|");
+                    System.out.println(s + "|");
                 }
 
             }
 
 
         } catch (SQLException e) {
-            System.out.println("Abfrage nicht möglich!");
+            System.out.println("Abfrage nicht mÃ¶glich!");
         }
 
 
     }
 
     public void createTableMitBlob(String tableName) throws SQLException {
-        //Binärdateien wie Bilder, musik etc
+        //BinÃ¤rdateien wie Bilder, musik etc
 
 
         Statement stmt = conn.createStatement();
@@ -232,5 +234,61 @@ public class Datenbank {
 
         }
 
+    }
+
+    public void insertOrUpdateBlob(String name, FileInputStream fis) throws SQLException {
+
+        Statement stmt = conn.createStatement();
+        ResultSet r = stmt.executeQuery(
+
+                "SELECT name "+
+                        "FROM blob"+
+                        " WHERE name='"+name+"'"
+
+
+        );
+
+        if(r.next()){
+            PreparedStatement ps = conn.prepareStatement(
+                    "UPDATE blob" +
+                            " SET blob = ?" +
+                            " WHERE name='" + name + "'");
+
+            ps.setBinaryStream(1, fis);
+            ps.executeUpdate();
+        }else {
+
+            PreparedStatement ps = conn.prepareStatement(
+
+                    "INSERT INTO blob VALUES (?,?)"
+
+            );
+
+
+                ps.setString(1, name); //zahlen beziehen sich auf die ? im preparedStatement
+                ps.setBinaryStream(2, fis);
+                ps.executeUpdate();
+
+
+        }
+
+
+
+    }
+
+    public InputStream getBlob(String name) throws SQLException {
+        Statement stmt = conn.createStatement();
+        ResultSet rS = stmt.executeQuery(
+
+                "SELECT blob" +
+                        " FROM blob" +
+                        " WHERE name='" + name + "'"
+        );
+
+        if (rS.next())
+            return rS.getBinaryStream(1);
+
+        //bei mehreren erwarteten Ergebnissen ist doWhile notwendig
+        return null;
     }
 }
