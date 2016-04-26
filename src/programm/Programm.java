@@ -27,6 +27,11 @@ public class Programm {
         } catch (ClassNotFoundException e) {
             System.out.println("Datenbanktreiber nicht gefunden");
         } catch (SQLException e) {
+            if(e.getMessage().startsWith("Datnbank nicht gefunden!"))
+                try{
+                    //Hier Abfrage, ob neue Db erstellt werden soll
+                    db = Datenbank.getInstance("test");
+                }
             System.out.println(e.getMessage());
             e.printStackTrace();
         }

@@ -1,9 +1,7 @@
 package db;
 
 import javax.swing.plaf.nimbus.State;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.Socket;
 import java.sql.*;
 import java.util.ArrayList;
@@ -87,6 +85,35 @@ public class Datenbank {
         return datenbank;
     }
 
+    public static Datenbank getInstance(String dbName) throws ClassNotFoundException, SQLException{
+
+        String host = "localhost";
+        int port = 5432;
+
+        String url = "jdbc:postgresql://"+host+":"+port+"/";
+        Properties props = new Properties();
+        props.setProperty("user","postgres");
+        props.setProperty("password", "root");
+
+        try{
+            conn = DriverManager.getConnection(url,props);
+            conn.createStatement().executeUpdate(
+                    "CREATE DATABASE "+dbName);
+            conn.close();
+        }
+        catch (SQLException e){
+            throw  new SQLException("Zugriff verweigert", e.getSQLState(),e);
+        }
+        try{
+            getInstance();
+        }catch(ClassNotFoundException e){}
+
+        einlesenScript();
+
+        return datenbank;
+
+    }
+
     public void createTable(String tableName) throws SQLException {
 
         //try catch hier eigentlich nicht, da man sicherstellen sollte,
@@ -109,6 +136,38 @@ public class Datenbank {
 
 
         }
+
+
+    }
+
+    private static void einlesenScript(){
+        try(BufferedReader br = new BufferedReader(
+                new FileReader(
+                        Datenbank.class.getResource("init.sql").getFile()))) {
+
+
+            String sqlInstruction ="";
+            String zeile;
+            while ((zeile = br.readLine())!=null){
+                zeile = zeile.split("--")[0];
+                sqlInstruction += zeile+" ";
+                if(sqlInstruction.trim().endsWith(";")){
+                    Statement stmt = conn.createStatement();
+                    stmt.execute(sqlInstruction);
+                }
+
+            }
+
+
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        ;
 
 
     }
